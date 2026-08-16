@@ -20,7 +20,7 @@ import pandas as pd
 
 
 class LLMClient:
-    def __init__(self, model_name: str = "gemini-3.6-flash"):
+    def __init__(self, model_name: str = "gemini-1.5-flash"):
         """
         Initialize the Gemini client using the GEMINI_API_KEY from .env.
         """
