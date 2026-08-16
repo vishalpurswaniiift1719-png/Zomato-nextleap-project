@@ -16,6 +16,9 @@ export default function Home() {
   // Results State
   const [results, setResults] = useState<any[]>([]);
   const [error, setError] = useState("");
+  
+  // Mobile Menu State
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [offset, setOffset] = useState(0);
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -90,6 +93,9 @@ export default function Home() {
       const newResults = data.recommendations || [];
       setResults(newResults);
       if (newResults.length < LIMIT) setHasMore(false);
+      
+      // Close mobile menu on successful search
+      setIsMobileMenuOpen(false);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -139,7 +145,38 @@ export default function Home() {
 
   return (
     <div className="flex w-full">
-      <aside className="hidden md:flex bg-surface/60 backdrop-blur-xl fixed left-0 top-0 h-full w-[280px] border-r border-white/5 shadow-xl flex-col py-2 z-40 transition-transform">
+      {/* Mobile Top Bar */}
+      <div className="md:hidden fixed top-0 left-0 w-full bg-surface/80 backdrop-blur-md border-b border-white/5 z-30 px-4 py-3 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center">
+            <span className="material-symbols-outlined text-[18px]">restaurant</span>
+          </div>
+          <h1 className="font-headline-md text-[18px] font-bold text-primary">Nocturne</h1>
+        </div>
+        <button 
+          onClick={() => setIsMobileMenuOpen(true)}
+          className="text-on-surface p-2 rounded-lg bg-surface-container border border-white/10 flex items-center justify-center"
+        >
+          <span className="material-symbols-outlined">menu</span>
+        </button>
+      </div>
+
+      {/* Mobile Overlay */}
+      {isMobileMenuOpen && (
+        <div 
+          className="fixed inset-0 bg-black/60 z-40 md:hidden backdrop-blur-sm transition-opacity"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
+      <aside className={`flex bg-surface/95 md:bg-surface/60 backdrop-blur-xl fixed left-0 top-0 h-full w-[280px] border-r border-white/5 shadow-xl flex-col py-2 z-50 transition-transform duration-300 ease-in-out ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0`}>
+        {/* Mobile Close Button */}
+        <button 
+          className="md:hidden absolute top-4 right-4 text-on-surface-variant hover:text-on-surface bg-surface-container rounded-full w-8 h-8 flex items-center justify-center border border-white/10"
+          onClick={() => setIsMobileMenuOpen(false)}
+        >
+          <span className="material-symbols-outlined text-[18px]">close</span>
+        </button>
         <div className="px-6 py-6 border-b border-white/5 mb-6 flex items-center gap-4">
           <div className="w-12 h-12 rounded-full overflow-hidden bg-surface-container border border-white/10 shrink-0 flex items-center justify-center bg-primary/20 text-primary">
             <span className="material-symbols-outlined">restaurant</span>
@@ -259,8 +296,8 @@ export default function Home() {
         </div>
       </aside>
 
-      <main className="md:ml-[280px] w-full pt-12 pb-12 px-6 min-h-screen">
-        <div className="max-w-5xl mx-auto mb-12 text-center md:text-left">
+      <main className="md:ml-[280px] w-full pt-24 md:pt-12 pb-12 px-4 md:px-6 min-h-screen">
+        <div className="max-w-5xl mx-auto mb-12 text-center md:text-left mt-2 md:mt-0">
           <h2 className="font-display-lg text-[48px] leading-[56px] font-bold mb-4">
             Curated for you by <br />
             <span className="text-gradient">Your AI Dining Assistant</span>
