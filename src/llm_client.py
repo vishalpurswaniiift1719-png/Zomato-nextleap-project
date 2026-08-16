@@ -64,7 +64,7 @@ def _generate_with_retry(api_key: str, model_name: str, system_prompt: str, user
 
 
 class LLMClient:
-    def __init__(self, model_name: str = "gemini-3.7-flash"):
+    def __init__(self, model_name: str = "gemini-3.6-flash"):
         """
         Initialize the Gemini client using the GEMINI_API_KEY from .env.
         """
