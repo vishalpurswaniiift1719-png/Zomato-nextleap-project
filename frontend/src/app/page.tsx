@@ -21,6 +21,9 @@ export default function Home() {
   const getApiUrl = () => {
     let url = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
     if (url.endsWith("/")) url = url.slice(0, -1);
+    if (!url.startsWith("http://") && !url.startsWith("https://")) {
+      url = "https://" + url;
+    }
     return url;
   };
 
