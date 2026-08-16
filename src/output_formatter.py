@@ -23,23 +23,14 @@ class Recommendation:
 
 
 def parse_and_verify(llm_json_str: str, candidates_df: pd.DataFrame) -> List[Recommendation]:
-    """
-    Parses the LLM JSON response and merges it with the verified dataset fields.
-    Acts as a guardrail against hallucinations.
-    
-    Args:
-        llm_json_str: Raw JSON string from the LLM.
-        candidates_df: The original DataFrame of candidates fed to the LLM.
-        
-    Returns:
-        List[Recommendation]: Verified recommendation objects.
-    """
     if candidates_df.empty:
         return []
         
+    # If the LLM client passed an explicit error string instead of JSON
+    if llm_json_str.startswith("ERROR:"):
+        return _fallback_recommendations(candidates_df, llm_json_str)
+        
     try:
-        # Strip any accidental markdown blocks the LLM might have added
-        # (even with response_mime_type, sometimes it happens if the model ignores config)
         clean_str = llm_json_str.strip()
         if clean_str.startswith("```json"):
             clean_str = clean_str[7:]
@@ -49,11 +40,11 @@ def parse_and_verify(llm_json_str: str, candidates_df: pd.DataFrame) -> List[Rec
         llm_results = json.loads(clean_str)
     except json.JSONDecodeError:
         print("Failed to parse LLM JSON. Falling back to default list.")
-        return _fallback_recommendations(candidates_df)
+        return _fallback_recommendations(candidates_df, f"Parse Error. Raw output: {llm_json_str[:100]}...")
         
     if not isinstance(llm_results, list):
         print("LLM did not return a list. Falling back to default list.")
-        return _fallback_recommendations(candidates_df)
+        return _fallback_recommendations(candidates_df, "Format Error: LLM did not return a JSON array.")
 
     valid_recommendations = []
     
@@ -83,25 +74,22 @@ def parse_and_verify(llm_json_str: str, candidates_df: pd.DataFrame) -> List[Rec
                 
     # If the LLM returned nothing valid, use fallback
     if not valid_recommendations:
-        return _fallback_recommendations(candidates_df)
+        return _fallback_recommendations(candidates_df, "Verification Error: LLM returned valid JSON but no restaurant names matched the database exactly.")
         
     # Ensure they are sorted by rank
     valid_recommendations.sort(key=lambda x: x.rank)
     return valid_recommendations
 
 
-def _fallback_recommendations(candidates_df: pd.DataFrame) -> List[Recommendation]:
-    """
-    Fallback method to provide recommendations if the LLM fails.
-    Simply takes the top 3 from the already-sorted candidates DataFrame.
-    """
+def _fallback_recommendations(candidates_df: pd.DataFrame, error_msg: str = None) -> List[Recommendation]:
     fallback_recs = []
     
     for rank, (index, row) in enumerate(candidates_df.iterrows(), start=1):
+        reason_text = error_msg if error_msg else "This is one of the highest-rated options matching your criteria."
         rec = Recommendation(
             rank=rank,
             name=row["name"],
-            reason="This is one of the highest-rated options matching your criteria.",
+            reason=reason_text,
             rating=row.get("rating", 0.0),
             cost=row.get("avg_cost_for_two", 0.0),
             cuisines=row.get("cuisines", ""),
