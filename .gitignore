@@ -14,7 +14,7 @@ env/
 # Data cache (downloaded datasets)
 data/*.csv
 data/*.parquet
-data/*.json
+!data/clean.parquet
 !data/.gitkeep
 
 # Jupyter Notebook checkpoints

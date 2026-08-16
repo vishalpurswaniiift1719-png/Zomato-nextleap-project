@@ -27,9 +27,12 @@ app_state = {
 def load_data_sync():
     """Synchronous function to load data"""
     try:
-        print("Background: Loading and cleaning dataset...")
-        raw_df = load_dataset()
-        df = clean_dataset(raw_df)
+        import pandas as pd
+        from pathlib import Path
+        
+        print("Background: Loading optimized dataset from disk...")
+        dataset_path = Path(__file__).parent.parent / "data" / "clean.parquet"
+        df = pd.read_parquet(dataset_path)
         app_state["df"] = df
         
         cities = df["city"].dropna().unique().tolist()
