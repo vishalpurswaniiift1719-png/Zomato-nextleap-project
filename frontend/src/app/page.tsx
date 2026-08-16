@@ -17,27 +17,43 @@ export default function Home() {
   const [results, setResults] = useState<any[]>([]);
   const [error, setError] = useState("");
 
+  // Safely get API URL and remove trailing slash if user added it by mistake
+  const getApiUrl = () => {
+    let url = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+    if (url.endsWith("/")) url = url.slice(0, -1);
+    return url;
+  };
+
   useEffect(() => {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+    const apiUrl = getApiUrl();
     fetch(`${apiUrl}/api/locations`)
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to connect to backend API");
+        return res.json();
+      })
       .then((data) => {
         if (data.locations && data.locations.length > 0) {
           setLocations(data.locations);
           setLocation(data.locations[0]);
         }
       })
-      .catch((err) => console.error("Error fetching locations:", err));
+      .catch((err) => {
+        console.error("Error fetching locations:", err);
+        setError(`Cannot connect to Backend (${apiUrl}). Did you redeploy Vercel with the env variable?`);
+      });
   }, []);
 
   const handleSearch = async () => {
-    if (!location) return;
+    if (!location) {
+      setError("Please wait for locations to load from the server.");
+      return;
+    }
     setLoading(true);
     setError("");
     setResults([]);
 
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      const apiUrl = getApiUrl();
       const cuisinesList = cuisineStr
         .split(",")
         .map((c) => c.trim())
@@ -56,7 +72,7 @@ export default function Home() {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to fetch recommendations");
+        throw new Error(`Failed to fetch recommendations (${response.status})`);
       }
 
       const data = await response.json();
