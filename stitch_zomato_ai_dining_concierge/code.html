@@ -1,0 +1,373 @@
+<!DOCTYPE html><html class="dark" lang="en" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Nocturne Dining - AI Recommender</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Outfit:wght@600;700;900&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-secondary-fixed": "#380c00",
+                      "error": "#ffb4ab",
+                      "secondary-fixed": "#ffdbcf",
+                      "surface": "#131313",
+                      "on-error-container": "#ffdad6",
+                      "error-container": "#93000a",
+                      "on-error": "#690005",
+                      "on-primary": "#680011",
+                      "primary": "#ffb3b1",
+                      "on-primary-container": "#5b000e",
+                      "surface-variant": "#353534",
+                      "secondary": "#ffb59c",
+                      "primary-fixed": "#ffdad8",
+                      "tertiary-fixed-dim": "#ffb5a0",
+                      "tertiary-container": "#ff5625",
+                      "surface-container-low": "#1c1b1b",
+                      "surface-tint": "#ffb3b1",
+                      "on-tertiary-fixed": "#3b0900",
+                      "primary-fixed-dim": "#ffb3b1",
+                      "surface-container-highest": "#353534",
+                      "on-surface": "#e5e2e1",
+                      "secondary-container": "#8e2c01",
+                      "primary-container": "#ff535a",
+                      "inverse-surface": "#e5e2e1",
+                      "surface-dim": "#131313",
+                      "on-primary-fixed-variant": "#92001c",
+                      "on-primary-fixed": "#410007",
+                      "surface-container-high": "#2a2a2a",
+                      "inverse-primary": "#bb162c",
+                      "inverse-on-surface": "#313030",
+                      "outline": "#ab8987",
+                      "on-surface-variant": "#e4bebc",
+                      "secondary-fixed-dim": "#ffb59c",
+                      "outline-variant": "#5b403f",
+                      "on-tertiary": "#601400",
+                      "surface-container": "#201f1f",
+                      "surface-bright": "#3a3939",
+                      "tertiary": "#ffb5a0",
+                      "on-tertiary-fixed-variant": "#872000",
+                      "on-secondary-container": "#ffaa8d",
+                      "surface-container-lowest": "#0e0e0e",
+                      "on-secondary": "#5c1a00",
+                      "background": "#131313",
+                      "on-background": "#e5e2e1",
+                      "on-tertiary-container": "#541100",
+                      "tertiary-fixed": "#ffdbd1",
+                      "on-secondary-fixed-variant": "#822800"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "sidebar-width": "280px",
+                      "gutter": "16px",
+                      "container-padding": "24px",
+                      "unit": "8px"
+              },
+              "fontFamily": {
+                      "body-lg": [
+                              "Inter"
+                      ],
+                      "headline-md": [
+                              "Outfit"
+                      ],
+                      "headline-lg-mobile": [
+                              "Outfit"
+                      ],
+                      "headline-lg": [
+                              "Outfit"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ],
+                      "display-lg": [
+                              "Outfit"
+                      ],
+                      "label-md": [
+                              "Inter"
+                      ],
+                      "label-sm": [
+                              "Inter"
+                      ]
+              },
+              "fontSize": {
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-lg-mobile": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "display-lg": [
+                              "48px",
+                              {
+                                      "lineHeight": "56px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "label-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "letterSpacing": "0.01em",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "label-sm": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "600"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+<style>
+        .glass-panel {
+            background: rgba(26, 26, 26, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .text-gradient {
+            background: linear-gradient(135deg, #ffb3b1, #ff535a);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .btn-glow {
+            box-shadow: 0 0 15px rgba(226, 55, 68, 0.4);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen overflow-x-hidden selection:bg-primary-container selection:text-on-primary-container">
+<!-- Sidebar Navigation -->
+<aside class="hidden md:flex bg-surface/60 backdrop-blur-xl fixed left-0 top-0 h-full w-sidebar-width border-r border-white/5 shadow-xl flex-col py-unit z-40 transition-transform">
+<!-- Brand / User Info -->
+<div class="px-container-padding py-6 border-b border-white/5 mb-6 flex items-center gap-4">
+<div class="w-12 h-12 rounded-full overflow-hidden bg-surface-container border border-white/10 shrink-0">
+<img alt="User profile" class="w-full h-full object-cover" data-alt="A cinematic, high-fashion portrait of an elegant woman with subtle neon lighting reflecting in her eyes. The background is a blurred, sophisticated dark restaurant interior with warm ambient lighting. Deep obsidian shadows contrast with soft glowing accents, maintaining a premium nocturnal aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD1T4ssdotgYnUDIAX9qJUzumfYIuQkg5MztQ3SOMyRNlYleqSaZ-kWrJ6K8ho9R4OFQ1lo-Dv4Vg06S0ZnVAMbv7FVe0hKt4D9YjDha23jM4d44tDPOkDHi9V4WoVqriT4-neiK4oW8tBEaqdB7zif13DbWegv-5-fNJOy-E5UqXJWLkg54JDDwIyF_sQijteRMD9f72-FdWHstHQIBD2kJWmp1wuisjjzoGmqYrDrmtHs_vo6HxF23g">
+</div>
+<div>
+<h1 class="font-headline-md text-headline-md font-bold text-primary truncate">Nocturne Dining</h1>
+<p class="font-label-md text-label-md text-on-surface-variant truncate">AI Concierge</p>
+</div>
+</div>
+<!-- Navigation Links (Context: Dashboard, so 'Discover' is active) -->
+
+<!-- Sidebar Filters Area -->
+<div class="px-6 py-6 border-t border-white/5">
+<h3 class="font-label-md text-label-md text-on-surface-variant mb-4 uppercase tracking-wider">Search Filters</h3>
+<div class="space-y-5">
+<!-- Location -->
+<div>
+<label class="block font-label-md text-label-md text-on-surface mb-2">Location</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm">location_city</span>
+<select class="w-full bg-surface-container border-white/10 text-on-surface rounded-lg pl-10 pr-4 py-2 font-body-md text-body-md focus:border-primary focus:ring-1 focus:ring-primary appearance-none transition-colors">
+<option>Downtown Core</option>
+<option>West End</option>
+<option>Financial District</option>
+</select>
+</div>
+</div>
+<!-- Budget -->
+<div>
+<label class="block font-label-md text-label-md text-on-surface mb-2">Budget</label>
+<div class="flex gap-2">
+<button class="flex-1 py-1.5 rounded-full border border-white/10 bg-surface-container text-on-surface-variant font-label-sm text-label-sm hover:border-primary hover:text-primary transition-all">Low</button>
+<button class="flex-1 py-1.5 rounded-full border border-primary bg-primary/10 text-primary font-label-sm text-label-sm transition-all">Med</button>
+<button class="flex-1 py-1.5 rounded-full border border-white/10 bg-surface-container text-on-surface-variant font-label-sm text-label-sm hover:border-primary hover:text-primary transition-all">High</button>
+</div>
+</div>
+<!-- Vibe -->
+
+<div class=""><label class="block font-label-md text-label-md text-on-surface mb-2">Cuisine</label><div class="flex flex-wrap gap-2"><button class="px-3 py-1 rounded-full border border-primary bg-primary/10 text-primary font-label-sm text-label-sm">Asian Fusion</button><button class="px-3 py-1 rounded-full border border-white/10 bg-surface-container text-on-surface-variant font-label-sm text-label-sm hover:border-primary hover:text-primary">Italian</button><button class="px-3 py-1 rounded-full border border-white/10 bg-surface-container text-on-surface-variant font-label-sm text-label-sm hover:border-primary hover:text-primary">French</button></div></div><div><label class="block font-label-md text-label-md text-on-surface mb-2">Describe your vibe</label><textarea class="w-full bg-surface-container border-white/10 text-on-surface rounded-lg px-3 py-2 font-body-md text-body-md focus:border-primary focus:ring-1 focus:ring-primary placeholder-on-surface-variant resize-none h-20 transition-colors" placeholder="e.g. Intimate, low lighting, jazz music..."></textarea></div></div>
+<!-- CTA -->
+<button class="w-full mt-6 bg-gradient-to-r from-primary-container to-tertiary-container text-white font-label-md text-label-md py-3 rounded-lg font-semibold btn-glow hover:opacity-90 transition-opacity flex items-center justify-center gap-2 group">
+<span class="material-symbols-outlined text-sm group-hover:animate-pulse">auto_awesome</span>
+                New Search
+            </button>
+</div>
+<!-- Footer Links -->
+<div class="mt-auto px-4 pt-4 border-t border-white/5 flex gap-2">
+<a class="flex-1 flex justify-center items-center py-2 text-on-surface-variant hover:text-primary transition-colors" href="#" title="Settings">
+<span class="material-symbols-outlined">settings</span>
+</a>
+<a class="flex-1 flex justify-center items-center py-2 text-on-surface-variant hover:text-primary transition-colors" href="#" title="Help">
+<span class="material-symbols-outlined">help</span>
+</a>
+</div>
+</aside>
+<!-- Top App Bar -->
+<header class="hidden md:flex bg-surface/40 backdrop-blur-lg fixed top-0 right-0 w-[calc(100%-280px)] z-50 border-b border-white/5 justify-between items-center h-16 px-gutter ml-sidebar-width">
+<div class="flex-1">
+<h1 class="font-headline-md text-headline-md font-black text-primary invisible">Nocturne Dining</h1> <!-- Hidden for structural balance if needed, or keep visible -->
+</div>
+
+<div class="flex items-center gap-4">
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">account_circle</span>
+</button>
+<button class="font-label-md text-label-md text-primary font-semibold border border-primary/30 px-4 py-1.5 rounded-full hover:bg-primary/10 transition-colors">
+                Sign In
+            </button>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="md:ml-sidebar-width pt-24 pb-12 px-container-padding min-h-screen">
+<!-- Hero Header -->
+<div class="max-w-5xl mx-auto mb-12 text-center md:text-left">
+<h2 class="font-display-lg text-display-lg mb-4">
+                Curated for you by <br>
+<span class="text-gradient">Your AI Dining Assistant</span>
+</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl">
+                Based on your preference for intimate, low-lighting environments with premium fusion cuisine in the downtown core.
+            </p>
+</div>
+<!-- Recommendations Bento Grid -->
+<div class="max-w-5xl mx-auto flex flex-col gap-2">
+<!-- Rank 1 Card (Spans full width or large area) -->
+<article class="glass-panel rounded-xl overflow-hidden flex flex-col md:flex-row group cursor-pointer relative">
+<div class="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
+
+<div class="p-8 flex flex-col justify-center border-t md:border-t-0 border-white/5 relative z-10">
+<div class="flex justify-between items-start mb-2">
+<h3 class="font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface group-hover:text-primary transition-colors">Aura Gastrobar</h3>
+<div class="flex items-center gap-1 text-tertiary">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-label-md text-label-md font-bold">4.9</span>
+</div>
+</div>
+<div class="flex flex-wrap gap-2 mb-6">
+<span class="px-2 py-1 rounded bg-secondary-container/30 text-secondary font-label-sm text-label-sm">Asian Fusion</span>
+<span class="px-2 py-1 rounded bg-surface-container text-on-surface-variant font-label-sm text-label-sm">$$$$</span>
+<span class="px-2 py-1 rounded bg-surface-container text-on-surface-variant font-label-sm text-label-sm">Downtown</span>
+</div>
+<div class="bg-primary/5 border border-primary/20 rounded-xl p-4">
+<div class="flex items-center gap-2 mb-2 text-primary">
+<span class="material-symbols-outlined text-sm">auto_awesome</span>
+<span class="font-label-md text-label-md font-bold">AI Reason</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant italic">
+                            "Perfectly aligns with your request for 'intimate low lighting'. Features exclusive booth seating and an extensive Japanese whisky collection you highly rate."
+                        </p>
+</div>
+</div>
+</article>
+<!-- Rank 2 Card -->
+<article class="glass-panel rounded-xl overflow-hidden flex flex-col md:flex-row group cursor-pointer relative">
+
+<div class="p-6 flex-1 flex flex-col">
+<div class="flex justify-between items-start mb-2">
+<h3 class="font-headline-md text-headline-md text-on-surface group-hover:text-primary transition-colors">Lumina Trattoria</h3>
+<div class="flex items-center gap-1 text-tertiary">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-label-md text-label-md font-bold">4.7</span>
+</div>
+</div>
+<div class="flex flex-wrap gap-2 mb-4">
+<span class="px-2 py-1 rounded bg-secondary-container/30 text-secondary font-label-sm text-label-sm">Modern Italian</span>
+<span class="px-2 py-1 rounded bg-surface-container text-on-surface-variant font-label-sm text-label-sm">$$$</span>
+</div>
+<div class="mt-auto bg-surface-container-high border border-white/5 rounded-xl p-4">
+<div class="flex items-center gap-2 mb-1 text-primary-fixed-dim">
+<span class="material-symbols-outlined text-sm">lightbulb</span>
+<span class="font-label-sm text-label-sm font-semibold">Vibe Match</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant text-sm line-clamp-2">
+                            Excellent jazz background music and a deep wine list fitting your profile.
+                        </p>
+</div>
+</div>
+</article>
+<!-- Rank 3 Card -->
+<article class="glass-panel rounded-xl overflow-hidden flex flex-col md:flex-row group cursor-pointer relative">
+
+<div class="p-6 flex-1 flex flex-col">
+<div class="flex justify-between items-start mb-2">
+<h3 class="font-headline-md text-headline-md text-on-surface group-hover:text-primary transition-colors">The Obsidian Room</h3>
+<div class="flex items-center gap-1 text-tertiary">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-label-md text-label-md font-bold">4.8</span>
+</div>
+</div>
+<div class="flex flex-wrap gap-2 mb-4">
+<span class="px-2 py-1 rounded bg-secondary-container/30 text-secondary font-label-sm text-label-sm">Tapas &amp; Cocktails</span>
+<span class="px-2 py-1 rounded bg-surface-container text-on-surface-variant font-label-sm text-label-sm">$$$</span>
+</div>
+<div class="mt-auto bg-surface-container-high border border-white/5 rounded-xl p-4">
+<div class="flex items-center gap-2 mb-1 text-primary-fixed-dim">
+<span class="material-symbols-outlined text-sm">lightbulb</span>
+<span class="font-label-sm text-label-sm font-semibold">Vibe Match</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant text-sm line-clamp-2">
+                            Hidden speakeasy entrance provides the high-end exclusivity you prefer.
+                        </p>
+</div>
+</div>
+</article>
+</div>
+</main>
+<!-- Mobile Bottom Navigation (Visible only on small screens) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full bg-surface/80 backdrop-blur-xl border-t border-white/5 z-50 flex justify-around items-center h-16 pb-safe">
+<a class="flex flex-col items-center justify-center w-full h-full text-primary" href="#">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 1;">explore</span>
+<span class="font-label-sm text-label-sm">Discover</span>
+</a>
+<a class="flex flex-col items-center justify-center w-full h-full text-on-surface-variant hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined mb-1">favorite</span>
+<span class="font-label-sm text-label-sm">Saved</span>
+</a>
+<a class="flex flex-col items-center justify-center w-full h-full text-on-surface-variant hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined mb-1">account_circle</span>
+<span class="font-label-sm text-label-sm">Profile</span>
+</a>
+</nav>
+
+
+</body></html>
