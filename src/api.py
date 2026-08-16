@@ -20,39 +20,27 @@ from src.output_formatter import parse_and_verify
 # Global variables for caching state
 app_state = {}
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    # Load and clean dataset once at startup
-    print("Loading and cleaning dataset...")
-    raw_df = load_dataset()
-    df = clean_dataset(raw_df)
-    
-    # Store for use in routes
-    app_state["df"] = df
-    
-    # Extract unique locations (remember: data_cleaner renamed 'location' to 'city')
-    # Filter out empty or Nan strings
-    cities = df["city"].dropna().unique().tolist()
-    app_state["locations"] = sorted([c for c in cities if c.strip() and c.lower() != "nan"])
-    
-    print(f"Loaded {len(df)} restaurants and {len(app_state['locations'])} unique locations.")
-    
-    yield
-    # Cleanup (if any)
-    app_state.clear()
+def ensure_dataset_loaded():
+    if "df" not in app_state:
+        print("Lazy loading and cleaning dataset...")
+        raw_df = load_dataset()
+        df = clean_dataset(raw_df)
+        app_state["df"] = df
+        
+        cities = df["city"].dropna().unique().tolist()
+        app_state["locations"] = sorted([c for c in cities if c.strip() and c.lower() != "nan"])
+        print(f"Loaded {len(df)} restaurants and {len(app_state['locations'])} unique locations.")
 
-
-app = FastAPI(title="Zomato AI Concierge API", lifespan=lifespan)
+app = FastAPI(title="Zomato AI Concierge API")
 
 # Allow Next.js frontend to communicate with this API
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
 
 class RecommendationRequest(BaseModel):
     location: str
@@ -61,20 +49,25 @@ class RecommendationRequest(BaseModel):
     min_rating: float = 3.0
     preferences: str = ""
 
-
 @app.get("/api/locations")
 async def get_locations():
     """Returns the list of all unique neighborhoods/locations in the dataset."""
-    if "locations" not in app_state:
-        raise HTTPException(status_code=503, detail="Dataset still loading")
-    return {"locations": app_state["locations"]}
+    try:
+        ensure_dataset_loaded()
+        return {"locations": app_state["locations"]}
+    except Exception as e:
+        print(f"Error loading dataset: {traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.post("/api/recommend")
 async def get_recommendations(req: RecommendationRequest):
     """Filters the dataset and asks Gemini for personalized recommendations."""
-    if "df" not in app_state:
-        raise HTTPException(status_code=503, detail="Dataset still loading")
+    try:
+        ensure_dataset_loaded()
+    except Exception as e:
+        print(f"Error loading dataset: {traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail="Failed to load dataset")
         
     df = app_state["df"]
     
