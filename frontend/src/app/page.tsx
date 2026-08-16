@@ -28,9 +28,17 @@ export default function Home() {
   const getApiUrl = () => {
     let url = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
     if (url.endsWith("/")) url = url.slice(0, -1);
+    
+    // Auto-prefix with https:// if no protocol is specified
     if (!url.startsWith("http://") && !url.startsWith("https://")) {
       url = "https://" + url;
     }
+    
+    // Force HTTPS for non-local URLs (fixes Mixed Content blocks on mobile Safari)
+    if (url.startsWith("http://") && !url.includes("localhost") && !url.includes("127.0.0.1") && !url.includes("192.168.")) {
+      url = url.replace("http://", "https://");
+    }
+    
     return url;
   };
 
