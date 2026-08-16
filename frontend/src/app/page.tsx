@@ -63,6 +63,7 @@ export default function Home() {
     setResults([]);
     setOffset(0);
     setHasMore(true);
+    setIsMobileMenuOpen(false);
 
     try {
       const apiUrl = getApiUrl();
@@ -93,9 +94,6 @@ export default function Home() {
       const newResults = data.recommendations || [];
       setResults(newResults);
       if (newResults.length < LIMIT) setHasMore(false);
-      
-      // Close mobile menu on successful search
-      setIsMobileMenuOpen(false);
     } catch (err: any) {
       setError(err.message);
     } finally {
