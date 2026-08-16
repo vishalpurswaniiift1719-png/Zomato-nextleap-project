@@ -72,4 +72,5 @@ class LLMClient:
             
         except Exception as e:
             print(f"Error calling Gemini API: {e}")
-            return f"ERROR: {e}"
+            # Fallback returning empty array
+            return "[]"
