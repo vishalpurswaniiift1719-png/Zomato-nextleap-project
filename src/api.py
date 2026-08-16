@@ -4,7 +4,8 @@ FastAPI Backend for Zomato Recommender
 Serves the data and AI logic to the Next.js frontend.
 """
 
-from fastapi import FastAPI, HTTPException
+import asyncio
+from fastapi import FastAPI, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import uvicorn
@@ -18,20 +19,36 @@ from src.llm_client import LLMClient
 from src.output_formatter import parse_and_verify
 
 # Global variables for caching state
-app_state = {}
+app_state = {
+    "is_ready": False,
+    "error": None
+}
 
-def ensure_dataset_loaded():
-    if "df" not in app_state:
-        print("Lazy loading and cleaning dataset...")
+def load_data_sync():
+    """Synchronous function to load data"""
+    try:
+        print("Background: Loading and cleaning dataset...")
         raw_df = load_dataset()
         df = clean_dataset(raw_df)
         app_state["df"] = df
         
         cities = df["city"].dropna().unique().tolist()
         app_state["locations"] = sorted([c for c in cities if c.strip() and c.lower() != "nan"])
-        print(f"Loaded {len(df)} restaurants and {len(app_state['locations'])} unique locations.")
+        app_state["is_ready"] = True
+        print(f"Background: Loaded {len(df)} restaurants and {len(app_state['locations'])} unique locations.")
+    except Exception as e:
+        app_state["error"] = str(e)
+        print(f"Background Error: {traceback.format_exc()}")
 
-app = FastAPI(title="Zomato AI Concierge API")
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Spawn the long-running dataset load in a background thread 
+    # so uvicorn binds to the port instantly!
+    loop = asyncio.get_event_loop()
+    loop.run_in_executor(None, load_data_sync)
+    yield
+
+app = FastAPI(title="Zomato AI Concierge API", lifespan=lifespan)
 
 # Allow Next.js frontend to communicate with this API
 app.add_middleware(
@@ -52,22 +69,19 @@ class RecommendationRequest(BaseModel):
 @app.get("/api/locations")
 async def get_locations():
     """Returns the list of all unique neighborhoods/locations in the dataset."""
-    try:
-        ensure_dataset_loaded()
-        return {"locations": app_state["locations"]}
-    except Exception as e:
-        print(f"Error loading dataset: {traceback.format_exc()}")
-        raise HTTPException(status_code=500, detail=str(e))
-
+    if app_state.get("error"):
+        raise HTTPException(status_code=500, detail=f"Dataset error: {app_state['error']}")
+    if not app_state["is_ready"]:
+        raise HTTPException(status_code=503, detail="Dataset is still downloading on the server. Please try again in 30 seconds.")
+    return {"locations": app_state["locations"]}
 
 @app.post("/api/recommend")
 async def get_recommendations(req: RecommendationRequest):
     """Filters the dataset and asks Gemini for personalized recommendations."""
-    try:
-        ensure_dataset_loaded()
-    except Exception as e:
-        print(f"Error loading dataset: {traceback.format_exc()}")
-        raise HTTPException(status_code=500, detail="Failed to load dataset")
+    if app_state.get("error"):
+        raise HTTPException(status_code=500, detail=f"Dataset error: {app_state['error']}")
+    if not app_state["is_ready"]:
+        raise HTTPException(status_code=503, detail="Dataset is still downloading on the server. Please try again in 30 seconds.")
         
     df = app_state["df"]
     
