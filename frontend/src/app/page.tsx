@@ -19,7 +19,7 @@ export default function Home() {
   const [offset, setOffset] = useState(0);
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
-  const LIMIT = 5;
+  const LIMIT = 3;
 
   // Safely get API URL and remove trailing slash if user added it by mistake
   const getApiUrl = () => {
@@ -313,7 +313,7 @@ export default function Home() {
                       className={"font-bold text-on-surface group-hover:text-primary transition-colors " + (index === 0 ? "font-headline-lg text-[32px]" : "font-headline-md text-[24px]")}
                     >
                       <span className="text-primary-fixed-dim mr-2">
-                        #{rec.rank}
+                        #{index + 1}
                       </span>
                       {rec.name}
                     </h3>

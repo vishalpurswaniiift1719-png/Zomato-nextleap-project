@@ -29,7 +29,7 @@ JSON OUTPUT FORMAT:
   {
     "name": "Exact Restaurant Name from candidates list",
     "rank": 1,
-    "reason": "A personalized, 1-2 sentence explanation of why this restaurant perfectly matches the user's preferences."
+    "reason": "A highly concise, 1 sentence maximum explanation of why this matches the user preferences."
   },
   ...
 ]
