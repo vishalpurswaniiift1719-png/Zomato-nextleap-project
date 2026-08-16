@@ -96,9 +96,8 @@ def _fallback_recommendations(candidates_df: pd.DataFrame) -> List[Recommendatio
     Simply takes the top 3 from the already-sorted candidates DataFrame.
     """
     fallback_recs = []
-    top_15 = candidates_df.head(15)
     
-    for rank, (index, row) in enumerate(top_15.iterrows(), start=1):
+    for rank, (index, row) in enumerate(candidates_df.iterrows(), start=1):
         rec = Recommendation(
             rank=rank,
             name=row["name"],

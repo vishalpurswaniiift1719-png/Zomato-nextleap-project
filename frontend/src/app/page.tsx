@@ -16,6 +16,10 @@ export default function Home() {
   // Results State
   const [results, setResults] = useState<any[]>([]);
   const [error, setError] = useState("");
+  const [offset, setOffset] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const LIMIT = 5;
 
   // Safely get API URL and remove trailing slash if user added it by mistake
   const getApiUrl = () => {
@@ -54,6 +58,8 @@ export default function Home() {
     setLoading(true);
     setError("");
     setResults([]);
+    setOffset(0);
+    setHasMore(true);
 
     try {
       const apiUrl = getApiUrl();
@@ -71,6 +77,8 @@ export default function Home() {
           cuisines: cuisinesList,
           min_rating: minRating,
           preferences: preferences,
+          limit: LIMIT,
+          offset: 0,
         }),
       });
 
@@ -79,11 +87,53 @@ export default function Home() {
       }
 
       const data = await response.json();
-      setResults(data.recommendations || []);
+      const newResults = data.recommendations || [];
+      setResults(newResults);
+      if (newResults.length < LIMIT) setHasMore(false);
     } catch (err: any) {
       setError(err.message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadMore = async () => {
+    if (loadingMore || !hasMore) return;
+    setLoadingMore(true);
+    const newOffset = offset + LIMIT;
+    setOffset(newOffset);
+
+    try {
+      const apiUrl = getApiUrl();
+      const cuisinesList = cuisineStr
+        .split(",")
+        .map((c) => c.trim())
+        .filter((c) => c.length > 0);
+
+      const response = await fetch(`${apiUrl}/api/recommend`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          location: location,
+          budget: budget,
+          cuisines: cuisinesList,
+          min_rating: minRating,
+          preferences: preferences,
+          limit: LIMIT,
+          offset: newOffset,
+        }),
+      });
+
+      if (!response.ok) throw new Error(`Failed to fetch more (${response.status})`);
+
+      const data = await response.json();
+      const moreResults = data.recommendations || [];
+      setResults((prev) => [...prev, ...moreResults]);
+      if (moreResults.length < LIMIT) setHasMore(false);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoadingMore(false);
     }
   };
 
@@ -306,6 +356,27 @@ export default function Home() {
                 </div>
               </article>
             ))}
+            
+            {hasMore && (
+              <button
+                onClick={loadMore}
+                disabled={loadingMore}
+                className="w-full mt-4 py-4 rounded-xl border border-white/10 bg-surface-container hover:bg-surface-container-high transition-colors text-primary font-bold flex items-center justify-center gap-2 disabled:opacity-50"
+              >
+                {loadingMore ? (
+                  <span className="material-symbols-outlined animate-spin text-sm">refresh</span>
+                ) : (
+                  <span className="material-symbols-outlined text-sm">expand_more</span>
+                )}
+                {loadingMore ? "Loading..." : "Load More Restaurants"}
+              </button>
+            )}
+            
+            {!hasMore && results.length > 0 && (
+              <p className="text-center text-on-surface-variant font-label-md mt-6 opacity-60">
+                You've reached the end of the recommendations!
+              </p>
+            )}
           </div>
         )}
       </main>

@@ -68,6 +68,8 @@ class RecommendationRequest(BaseModel):
     cuisines: list[str] = []
     min_rating: float = 3.0
     preferences: str = ""
+    limit: int = 5
+    offset: int = 0
 
 @app.get("/api/locations")
 async def get_locations():
@@ -101,7 +103,10 @@ async def get_recommendations(req: RecommendationRequest):
     )
     
     # 2. Filter dataset
-    candidates_df = filter_restaurants(df, query, top_n=15)
+    candidates_df = filter_restaurants(df, query, top_n=100)
+    
+    # 2.5 Apply Pagination Chunking
+    candidates_df = candidates_df.iloc[req.offset : req.offset + req.limit]
     
     if candidates_df.empty:
         return {"recommendations": []}
