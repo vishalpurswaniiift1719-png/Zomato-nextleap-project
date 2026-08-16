@@ -23,10 +23,10 @@ import time
 from functools import lru_cache
 
 @lru_cache(maxsize=256)
-def _generate_with_retry(api_key: str, model_name: str, system_prompt: str, user_prompt: str) -> str:
+def _generate_with_retry(api_key: str, model_names: tuple, system_prompt: str, user_prompt: str) -> str:
     """
-    Global cached function that attempts to call the Gemini API with exponential backoff.
-    Since it is cached, identical user prompts will return instantly without calling the API.
+    Global cached function that attempts to call the Gemini API using a cascade of models.
+    If a model hits a rate limit or 503, it dynamically swaps to the next model in the tuple.
     """
     client = genai.Client(api_key=api_key)
     
@@ -36,25 +36,21 @@ def _generate_with_retry(api_key: str, model_name: str, system_prompt: str, user
         response_mime_type="application/json"
     )
 
-    max_retries = 3
-    base_delay = 2
-
-    for attempt in range(max_retries):
+    for attempt, current_model in enumerate(model_names):
         try:
             response = client.models.generate_content(
-                model=model_name,
+                model=current_model,
                 contents=user_prompt,
                 config=config,
             )
             return response.text
         except Exception as e:
             error_str = str(e).lower()
-            # If rate limited (429) or service unavailable (503), backoff and retry
+            # If rate limited (429) or service unavailable (503), swap to next model
             if "429" in error_str or "503" in error_str or "quota" in error_str or "exhausted" in error_str:
-                if attempt < max_retries - 1:
-                    sleep_time = base_delay * (2 ** attempt)
-                    print(f"Gemini API rate limited. Retrying in {sleep_time}s... (Attempt {attempt+1}/{max_retries})")
-                    time.sleep(sleep_time)
+                if attempt < len(model_names) - 1:
+                    print(f"Model {current_model} overloaded or limited. Swapping to {model_names[attempt+1]}...")
+                    time.sleep(1) # Small pause before model swap
                     continue
             
             print(f"Error calling Gemini API: {e}")
@@ -64,7 +60,7 @@ def _generate_with_retry(api_key: str, model_name: str, system_prompt: str, user
 
 
 class LLMClient:
-    def __init__(self, model_name: str = "gemini-3.6-flash"):
+    def __init__(self, fallback_models: tuple = None):
         """
         Initialize the Gemini client using the GEMINI_API_KEY from .env.
         """
@@ -77,7 +73,14 @@ class LLMClient:
         if genai is None:
             raise ImportError("The 'google-genai' package is not installed. Please run: pip install google-genai")
             
-        self.model_name = model_name
+        # A robust cascade of fast models. Each has its own independent rate limit bucket!
+        self.fallback_models = fallback_models or (
+            "gemini-3.6-flash",
+            "gemini-flash-latest",
+            "gemini-2.5-flash",
+            "gemini-3.7-flash",
+            "gemini-3.5-flash"
+        )
 
     def generate_recommendations(self, preferences: str, candidates_df: pd.DataFrame) -> str:
         """
@@ -96,4 +99,4 @@ class LLMClient:
         system_prompt = build_system_prompt()
         user_prompt = build_user_prompt(preferences, candidates_df)
 
-        return _generate_with_retry(self.api_key, self.model_name, system_prompt, user_prompt)
+        return _generate_with_retry(self.api_key, self.fallback_models, system_prompt, user_prompt)
