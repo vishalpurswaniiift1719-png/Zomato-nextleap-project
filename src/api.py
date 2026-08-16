@@ -101,7 +101,7 @@ async def get_recommendations(req: RecommendationRequest):
     )
     
     # 2. Filter dataset
-    candidates_df = filter_restaurants(df, query, top_n=5)
+    candidates_df = filter_restaurants(df, query, top_n=15)
     
     if candidates_df.empty:
         return {"recommendations": []}

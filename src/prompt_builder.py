@@ -17,7 +17,7 @@ def build_system_prompt() -> str:
     constraints, and expected JSON output format.
     """
     return """You are an expert Zomato Restaurant Recommender.
-Your task is to analyze a list of candidate restaurants and pick the top 3 best options based on the user's specific preferences.
+Your task is to analyze a list of candidate restaurants and pick the top 15 best options (or as many as available) based on the user's specific preferences.
 
 CRITICAL RULES:
 1. You MUST ONLY recommend restaurants that are present in the provided candidate list.
@@ -70,7 +70,7 @@ def build_user_prompt(preferences: str, candidates_df: pd.DataFrame) -> str:
     user_prompt = f"""USER PREFERENCES:
 {preferences if preferences else "Find the best highly-rated options."}
 
-CANDIDATE RESTAURANTS (Choose exactly 3 from this list):
+CANDIDATE RESTAURANTS (Choose up to 15 from this list, ordered by relevance):
 {candidates_json}
 
 Return ONLY the JSON array. Do not include markdown code blocks or any other text.

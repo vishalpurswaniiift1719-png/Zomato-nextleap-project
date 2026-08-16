@@ -80,10 +80,6 @@ def parse_and_verify(llm_json_str: str, candidates_df: pd.DataFrame) -> List[Rec
                 location=row.get("city", "")
             )
             valid_recommendations.append(rec)
-            
-            # Stop if we hit 3 recommendations
-            if len(valid_recommendations) >= 3:
-                break
                 
     # If the LLM returned nothing valid, use fallback
     if not valid_recommendations:
@@ -100,9 +96,9 @@ def _fallback_recommendations(candidates_df: pd.DataFrame) -> List[Recommendatio
     Simply takes the top 3 from the already-sorted candidates DataFrame.
     """
     fallback_recs = []
-    top_3 = candidates_df.head(3)
+    top_15 = candidates_df.head(15)
     
-    for rank, (index, row) in enumerate(top_3.iterrows(), start=1):
+    for rank, (index, row) in enumerate(top_15.iterrows(), start=1):
         rec = Recommendation(
             rank=rank,
             name=row["name"],
